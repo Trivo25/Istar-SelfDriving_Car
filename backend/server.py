@@ -2,16 +2,11 @@
 # name: backend/start.py
 # Python 3.6
 # Description:
-#   enconding of .jpg files (images/frames) and processing them
+#   Receiving packets from the raspberry pi frontend
 #
 #
 
-#import urllib.request
 
-#with urllib.request.urlopen('http://127.0.0.1:8080/') as response:
-#   html = response.read()
-
-#   print(html)
 
 
 import socket
@@ -43,23 +38,13 @@ def serverSetup():
     while True:
             time.sleep(tickRate)
             data = conn.recv(buffer_size)
-
             if (sys.getsizeof(data) > 35):
                 print (time.strftime("%X ", time.gmtime()) + " RECEIVED Message size: " + str(sys.getsizeof(data)) + " from " , addr)
-
-                #with open("img.txt", 'wb') as f:
-                #    f.write(data)
                 dataByte = data
-                #print(dataByte)
-                    #  data_img = base64.b64decode(data)
-                #return data_img
-                    #npimg = np.fromstring(data_img, dtype=np.uint8)
-                    #imgTuple = cv2.imdecode(npimg, 1)
-                #cv2.imwrite('messigray.png',source)
-
     conn.close()
 
 
+    
 def showImg():
     time.sleep(2)
     while True:
@@ -68,13 +53,11 @@ def showImg():
 
         imgString = dataByte.decode()
 
-        #print(dataByte)
 
         img = base64.b64decode(imgString)
         npimg = np.fromstring(img, dtype=np.uint8)
         source = cv2.imdecode(npimg, 1)
         cv2.imshow("Stream", source)
-        #cv2.imwrite('test.jpg', source)
 
         cv2.waitKey(1)
         time.sleep(tickRate)
@@ -83,4 +66,4 @@ def showImg():
 
 _thread.start_new_thread(showImg,())
 serverSetup()
-#showImg(imgTuple)
+
