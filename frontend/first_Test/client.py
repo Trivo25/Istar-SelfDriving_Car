@@ -2,8 +2,7 @@
 # name:  frontend/start.py
 # Python 3.6
 # Description:
-#   decoding of .jpg files (images/frames) and send them
-#   over a webserver (webpy) to the PC to do the heavy lifitng
+#   client side (frontend) - receives cmds from server and executes them
 #
 
 import socket
@@ -12,34 +11,50 @@ import cv2
 import base64
 import time
 import sys
-import _thread
+import thread as _thread
+import RPi.GPIO as GPIO
 
-vidCap = cv2.VideoCapture(-1);
 
-IP_Adress_Server = "127.0.0.1"
+#>>> DEFINING CLIENT SENSOR AND CAMERA <<<
+vidCap = cv2.VideoCapture(0);
+vidCap.set(CV_CAP_PROP_FRAME_WIDTH,400);
+vidCap.set(CV_CAP_PROP_FRAME_HEIGHT,400);
+#>>> DEFINING DEFAULT ADRESSES AND PORT <<<
+IP_Adress_Server = "192.168.178.32"#socket.gethostname()
 PORT_server = 5555
 
-IP_Adress_Client = "127.0.0.1"
+IP_Adress_Client = "192.168.178.37"#socket.gethostname()#"127.0.0.1"
 PORT_Client = 5544
-buffer_size = 95000
-tickRate = 1/30
 
+#>>> DEFINING SERVER-SIDE SETTINGS <<<
+buffer_size = 95000
+
+
+#>>> DEFINING SERVER-SIDE COMMANDS (OPCODE) <<<
+cmd_turnLeft = b'0x1a1'
+cmd_turnRight = b'0x2a2'
+cmd_onTrack = b'0x3a3'
+
+#>>> DEFINING TEST VARIABLES <<<
+global dataByte
+GPIO.setmode(GPIO.BOARD)
+GPIO.cleanup()
+GPIO.setup(7, GPIO.OUT)
+GPIO.setup(11, GPIO.OUT)
 
 def sender():
-    global senderSock
-    senderSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    senderSock.connect((IP_Adress_Server, PORT_server))
+    global senderSocket
+    senderSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    senderSocket.connect((IP_Adress_Server, PORT_server))
     print(time.strftime("%X ", time.gmtime()) +" Connected to server!")
     _thread.start_new_thread(receiver,())
-    #receiver()
-    while True:
-        message = input()
-        senderSock.send(str.encode(message))
+    cameraStream()
+
 
 def receiver():
     receiverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     receiverSocket.bind((IP_Adress_Client, PORT_Client))
-    receiverSocket.listen(2)
+    receiverSocket.listen(1)
 
 
     print(time.strftime("%X ", time.gmtime()) + " Waiting for server..")
@@ -47,11 +62,27 @@ def receiver():
 
     print(time.strftime("%X ", time.gmtime()) + " Connection accepted; " + str(addr))
     while True:
-            time.sleep(tickRate)
+            time.sleep(1/20)
             data = receiverCon.recv(buffer_size)
 
-            print (time.strftime("%X ", time.gmtime()) + " RECEIVED Message: " + str(data) + " " , addr)
-            #print(str(data))
+
+            if data == b'':
+                return
+            elif data == cmd_turnLeft:
+                print("TURNING LEFT")
+                GPIO.output(7, GPIO.LOW)
+                GPIO.output(11, GPIO.HIGH)
+
+            elif data == cmd_turnRight:
+                print("TURNING RIGHT")
+                GPIO.output(7, GPIO.HIGH)
+                GPIO.output(11, GPIO.LOW)
+
+            elif data == cmd_onTrack:
+                print("PERFECTLY ON TRACK")
+                GPIO.output(7, GPIO.HIGH)
+                GPIO.output(11, GPIO.HIGH)
+
 
 
     receiverCon.close()
@@ -59,27 +90,21 @@ def receiver():
 
 
 def cameraStream():
-    global clientSock
+    global senderSocket
+    print(time.strftime("%X ", time.gmtime()) + " Sending stream to " + str(IP_Adress_Server) + str(PORT_server))
     while True:
+        time.sleep(1/60)
 
-        time.sleep(tickRate)
-        #Message = input("Enter your message: ")
-        grabbed, frame = vidCap.read()  # grab the current frame
-        frame = cv2.resize(frame, (400, 400))  # resize the frame
+        grabbed, frame = vidCap.read()
         retval, buffer = cv2.imencode('.jpg', frame)
         jpg_as_text = base64.b64encode(buffer)
-        #print(sys.getsizeof(jpg_as_text))
-        print("Sending camera stream to " + IP_Adress_Server + str(PORT_server) )
-        #str.encode(str)
-        senderSock.send(jpg_as_text)
+        senderSocket.send(jpg_as_text)
 
-
-    senderSock.close()
-    senderSock.shutdown()
+    senderSocket.close()
+    senderSocket.shutdown()
 
 
 
 
 sender()
-receiver()
 #cameraStream()
