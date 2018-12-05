@@ -2,8 +2,8 @@
 # name:  frontend/start.py
 # Python 3.6
 # Description:
-#   client side (frontend) - receives cmds from server and executes them
-#
+#   client side (frontend) - receives and sends data to the server
+#   
 
 import socket
 import numpy as np
@@ -17,8 +17,9 @@ import RPi.GPIO as GPIO
 
 #>>> DEFINING CLIENT SENSOR AND CAMERA <<<
 vidCap = cv2.VideoCapture(0);
-vidCap.set(CV_CAP_PROP_FRAME_WIDTH,400);
-vidCap.set(CV_CAP_PROP_FRAME_HEIGHT,400);
+vidCap.set(3,400);
+vidCap.set(4,400);
+
 #>>> DEFINING DEFAULT ADRESSES AND PORT <<<
 IP_Adress_Server = "192.168.178.32"#socket.gethostname()
 PORT_server = 5555
@@ -39,7 +40,7 @@ cmd_onTrack = b'0x3a3'
 global dataByte
 GPIO.setmode(GPIO.BOARD)
 GPIO.cleanup()
-GPIO.setup(7, GPIO.OUT)
+GPIO.setup(13, GPIO.OUT)
 GPIO.setup(11, GPIO.OUT)
 
 def sender():
@@ -62,7 +63,7 @@ def receiver():
 
     print(time.strftime("%X ", time.gmtime()) + " Connection accepted; " + str(addr))
     while True:
-            time.sleep(1/20)
+            time.sleep(1/60)
             data = receiverCon.recv(buffer_size)
 
 
@@ -70,18 +71,21 @@ def receiver():
                 return
             elif data == cmd_turnLeft:
                 print("TURNING LEFT")
-                GPIO.output(7, GPIO.LOW)
-                GPIO.output(11, GPIO.HIGH)
+                GPIO.output(11, GPIO.LOW)
+                GPIO.output(13, GPIO.HIGH)
+
 
             elif data == cmd_turnRight:
                 print("TURNING RIGHT")
-                GPIO.output(7, GPIO.HIGH)
-                GPIO.output(11, GPIO.LOW)
+                GPIO.output(13, GPIO.LOW)
+                GPIO.output(11, GPIO.HIGH)
+
+
 
             elif data == cmd_onTrack:
-                print("PERFECTLY ON TRACK")
-                GPIO.output(7, GPIO.HIGH)
+                print("ON TRACK")
                 GPIO.output(11, GPIO.HIGH)
+                GPIO.output(13, GPIO.HIGH)
 
 
 
@@ -96,12 +100,12 @@ def cameraStream():
         time.sleep(1/60)
 
         grabbed, frame = vidCap.read()
-        retval, buffer = cv2.imencode('.jpg', frame)
+        crop_img = frame[100:300, 100:300]
+        retval, buffer = cv2.imencode('.jpg', crop_img)
         jpg_as_text = base64.b64encode(buffer)
         senderSocket.send(jpg_as_text)
 
-    senderSocket.close()
-    senderSocket.shutdown()
+
 
 
 

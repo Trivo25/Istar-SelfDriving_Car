@@ -20,7 +20,7 @@ import _thread
 IP_Adress_Server = "192.168.178.32" #socket.gethostname()
 PORT_server = 5555
 
-IP_Adress_Client = "192.168.178.37"
+IP_Adress_Client = "192.168.178.49"
 PORT_Client = 5544
 
 #>>> DEFINING SERVER-SIDE SETTINGS <<<
@@ -42,9 +42,6 @@ def sender():
     senderSocket.connect((IP_Adress_Client, PORT_Client))
     print(time.strftime("%X ", time.gmtime()) + " Connected to client!")
 
-    #while True:
-    #    message = input()
-    #    senderSocket.send(str.encode(message))
 
 
 
@@ -57,22 +54,19 @@ def receiver():
 
     print(time.strftime("%X ", time.gmtime()) + " Waiting for client..")
     conn, addr = receiverSocket.accept()
-    _thread.start_new_thread(laneControl,())
     print(time.strftime("%X ", time.gmtime()) + " Connection accepted; " + str(addr))
     _thread.start_new_thread(sender,())
+    _thread.start_new_thread(laneControl,())
     while True:
 
             time.sleep(tickRate)
             data = conn.recv(buffer_size)
 
             if (sys.getsizeof(data) > 500):
-                #print (time.strftime("%X ", time.gmtime()) + " RECEIVED  " + str(sys.getsizeof(data)) + " " , addr)
                 dataByte = data
-            #print (time.strftime("%X ", time.gmtime()) + " RECEIVED:   " + str(data) + "   " , addr)
 
 
-    conn.close()
-    serverSocket.close()
+
 
 
 
