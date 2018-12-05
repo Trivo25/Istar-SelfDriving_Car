@@ -4,7 +4,7 @@ Self-driving car using a Raspberry Pi, OpenCV and a host PC.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
@@ -17,11 +17,13 @@ Python 2.7
 
 ### Installing
 
-It's simple;
+It's simple; ll you need to do is..
 ```
-Change both IPs in each the server.py and client.py
+- change both IPs in Server.py and Client.py
+- open all ports on both of your machines (RPi and Host-PC)
 ```
 
+Then you're good to go! Don#t forget to plug in a camera.
 
 
 
