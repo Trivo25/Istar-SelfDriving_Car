@@ -1,12 +1,10 @@
   <p align="center">
-    An awesome README template to jumpstart your projects!
+    self-driving car based on Python and OpenCV 
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
-    ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Request Feature</a>
+    <a href="https://opencv.org/"><strong>OpenCV</strong></a>
+  <br />
+    <a href="https://www.python.org/"><strong>Python</strong></a>
+  </p>
+  <p align="left">
+    
   </p>
